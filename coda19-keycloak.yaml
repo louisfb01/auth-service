@@ -1,0 +1,220 @@
+kind: Template
+apiVersion: template.openshift.io/v1
+metadata:
+  name: auth-service
+  namespace: openshift-config
+  annotations:
+    description: An example Keycloak server with HTTPS
+    iconClass: icon-sso
+    openshift.io/display-name: auth-service
+    tags: auth-service
+objects:
+  - apiVersion: v1
+    kind: Secret
+    metadata:
+      name: ${CODA_KEYCLOAK_ID}-db-identifiers
+      labels:
+        application: ${CODA_KEYCLOAK_ID}
+    type: kubernetes.io/basic-auth
+    stringData:
+      username: ${DB_USER} 
+      password: ${DB_PASSWORD}
+  - apiVersion: v1
+    kind: Secret
+    metadata:
+      name: ${CODA_KEYCLOAK_ID}-identifiers
+      labels:
+        application: ${CODA_KEYCLOAK_ID}
+    type: kubernetes.io/basic-auth
+    stringData:
+      username: ${KEYCLOAK_USER} 
+      password: ${KEYCLOAK_PASSWORD}
+  - apiVersion: v1
+    kind: Service
+    metadata:
+      annotations:
+        description: The web server's https port.
+      labels:
+        application: '${CODA_KEYCLOAK_ID}'
+      name: '${CODA_KEYCLOAK_ID}'
+    spec:
+      ports:
+        - port: 80
+          protocol: TCP
+          targetPort: 8080
+      selector:
+        deploymentConfig: '${CODA_KEYCLOAK_ID}'
+      sessionAffinity: None
+      type: ClusterIP
+  - apiVersion: autoscaling/v1
+    kind: HorizontalPodAutoscaler
+    metadata:
+      name: ${CODA_KEYCLOAK_ID}
+      labels:
+        application: ${CODA_KEYCLOAK_ID}
+    spec:
+      scaleTargetRef:
+        kind: DeploymentConfig
+        name: ${CODA_KEYCLOAK_ID}
+        apiVersion: v1
+      minReplicas: ${CODA_KEYCLOAK_AUTOSCALING_MINIMUM_PODS_INSTANCES}
+      maxReplicas: ${CODA_KEYCLOAK_AUTOSCALING_MAXIMUM_PODS_INSTANCES}
+      targetCPUUtilizationPercentage: ${CODA_KEYCLOAK_AUTOSCALING_CPU_TRESHOLD}
+  - apiVersion: v1
+    id: '${CODA_KEYCLOAK_ID}'
+    kind: Route
+    metadata:
+      annotations:
+        description: Route for application's https service.
+      labels:
+        application: '${CODA_KEYCLOAK_ID}'
+      name: '${CODA_KEYCLOAK_ID}'
+    spec:
+      host: '${CODA_KEYCLOAK_FQDN}'
+      tls:
+        termination: edge
+      to:
+        name: '${CODA_KEYCLOAK_ID}'
+  - apiVersion: v1
+    kind: DeploymentConfig
+    metadata:
+      labels:
+        application: '${CODA_KEYCLOAK_ID}'
+      name: '${CODA_KEYCLOAK_ID}'
+    spec:
+      replicas: 1
+      selector:
+        deploymentConfig: '${CODA_KEYCLOAK_ID}'
+      strategy:
+        type: Rolling
+      template:
+        metadata:
+          labels:
+            application: '${CODA_KEYCLOAK_ID}'
+            deploymentConfig: '${CODA_KEYCLOAK_ID}'
+          name: '${CODA_KEYCLOAK_ID}'
+        spec:
+          containers:
+            - env:
+                - name: KEYCLOAK_USER
+                  valueFrom:
+                    secretKeyRef:
+                      key: username
+                      name: ${CODA_KEYCLOAK_ID}-identifiers
+                - name: KEYCLOAK_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      key: password
+                      name: ${CODA_KEYCLOAK_ID}-identifiers
+                - name: DB_VENDOR
+                  value: '${DB_VENDOR}'
+                - name: DB_DATABASE
+                  value: '${DB_DATABASE}'
+                - name: DB_USER
+                  valueFrom:
+                    secretKeyRef:
+                      key: username
+                      name: ${CODA_KEYCLOAK_ID}-db-identifiers
+                - name: DB_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      key: password
+                      name: ${CODA_KEYCLOAK_ID}-db-identifiers
+                - name: DB_ADDR
+                  value: '${DB_ADDR}'
+                - name: JGROUPS_DISCOVERY_PROTOCOL
+                  value: JDBC_PING
+                - name: JGROUPS_DISCOVERY_PROPERTIES
+                  value: datasource_jndi_name=java:jboss/datasources/KeycloakDS
+              image: coda/auth-service:latest
+              imagePullPolicy: Always
+              name: '${CODA_KEYCLOAK_ID}'
+              ports:
+                - containerPort: 8080
+                  protocol: TCP
+                - containerPort: 8443
+                  name: https
+                  protocol: TCP
+                - containerPort: 7600
+                  name: ping
+                  protocol: TCP
+              resources:
+                limits:
+                  cpu: ${CPU_LIMIT}
+                  memory: ${MEMORY_LIMIT}
+      triggers:
+        - type: ConfigChange
+parameters:
+  - name: CODA_KEYCLOAK_ID
+    displayName: Application Name
+    description: The name for the application.
+    value: auth-service
+    required: true
+  - name: KEYCLOAK_USER
+    displayName: Keycloak Administrator Username
+    description: Keycloak Server administrator username
+    required: true
+  - name: KEYCLOAK_PASSWORD
+    displayName: Keycloak Administrator Password
+    description: Keycloak Server administrator password
+    required: true
+  - name: DB_VENDOR
+    displayName: DB Vendor
+    description: 'DB vendor (H2, POSTGRES, MYSQL or MARIADB)'
+    value: postgres
+    required: true
+  - name: CODA_KEYCLOAK_FQDN
+    displayName: Custom https Route Hostname
+    description: >-
+      Custom hostname for https service route. Leave blank for default hostname,
+      e.g.: <application-name>-<namespace>.<default-domain-suffix>
+    value: auth.hub.coda.com
+  - description: Namespace in which the ImageStreams for Red Hat Middleware images are
+      installed. These ImageStreams are normally installed in the openshift namespace.
+      You should only need to modify this if you've installed the ImageStreams in a
+      different namespace/project.
+    displayName: ImageStream Namespace
+    name: IMAGE_STREAM_NAMESPACE
+    required: true
+    value: openshift
+  - description: Name of the jboss Keycloak image in the specified namespace and its tag
+    displayName: Image Name 
+    name: IMAGE_NAME
+    required: true
+    value: keycloak:11.0.0
+  - description: Container CPU limit.
+    displayName: Container CPU Limit
+    name: CPU_LIMIT
+    value: 1000m
+  - description: Container memory limit.
+    displayName: Container Memory Limit
+    name: MEMORY_LIMIT
+    value: 1000M
+  - description: Database user name
+    displayName: Database Username
+    name: DB_USER
+    required: true
+  - description: Database user password
+    displayName: Database Password
+    name: DB_PASSWORD
+    required: true
+  - description: Database name
+    displayName: Database Name
+    name: DB_DATABASE
+    required: true
+  - description: External Database server address
+    displayName: Database URL
+    name: DB_ADDR
+    required: true
+  - displayName: Nombre minimum d'instance de pods (autoscaling)
+    name: CODA_KEYCLOAK_AUTOSCALING_MINIMUM_PODS_INSTANCES
+    value: '1'
+    required: true
+  - displayName: Nombre maximum d'instance de pods (autoscaling)
+    name: CODA_KEYCLOAK_AUTOSCALING_MAXIMUM_PODS_INSTANCES
+    value: '1'
+    required: true
+  - displayName: Seuil de charge CPU (en pourcent) pour instancer automatiquement un nouveau pod (autoscaling)
+    name: CODA_KEYCLOAK_AUTOSCALING_CPU_TRESHOLD
+    value: '75'
+    required: true
