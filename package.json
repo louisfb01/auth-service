@@ -1,0 +1,23 @@
+{
+  "name": "auth-service",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "caprover:setup": "node ./caprover/setup.js",
+    "caprover:deploy": "node ./caprover/deploy.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/coda-platform/auth-service.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/coda-platform/auth-service/issues"
+  },
+  "homepage": "https://github.com/coda-platform/auth-service#readme",
+  "dependencies": {
+    "dotenv": "^16.0.3"
+  }
+}

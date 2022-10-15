@@ -1,0 +1,36 @@
+{
+    "appName": "auth-service",
+    "instanceCount": 1,
+    "notExposeAsWebApp": false,
+    "forceSsl": true,
+    "envVars": [
+        {
+            "key": "CODA_AUTH_SERVICE_DB_HOST",
+            "value": "$CODA_AUTH_SERVICE_DB_HOST"
+        },
+        {
+            "key": "CODA_AUTH_SERVICE_DB_NAME",
+            "value": "$CODA_AUTH_SERVICE_DB_NAME"
+        },
+        {
+            "key": "CODA_AUTH_SERVICE_DB_USERNAME",
+            "value": "$CODA_AUTH_SERVICE_DB_USERNAME"
+        },
+        {
+            "key": "CODA_AUTH_SERVICE_DB_PASSWORD",
+            "value": "$CODA_AUTH_SERVICE_DB_PASSWORD"
+        },
+        {
+            "key": "CAPROVER_ROOT",
+            "value": "$CAPROVER_ROOT"
+        },
+        {
+            "key": "CAPROVER_NAME",
+            "value": "$CAPROVER_NAME"
+        },
+        {
+            "key": "CAPROVER_APP",
+            "value": "$CAPROVER_APP"
+        }
+    ]
+}
