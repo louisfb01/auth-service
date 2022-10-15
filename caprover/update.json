@@ -1,10 +1,18 @@
 {
-    "appName": "auth-service",
+    "appName": "auth-service2",
     "instanceCount": 1,
     "notExposeAsWebApp": false,
     "forceSsl": true,
     "containerHttpPort": "$CODA_AUTH_SERVICE_PORT",
     "envVars": [
+        {
+            "key": "CODA_AUTH_SERVICE_ADMIN_USERNAME",
+            "value": "$CODA_AUTH_SERVICE_ADMIN_USERNAME"
+        },
+        {
+            "key": "CODA_AUTH_SERVICE_ADMIN_PASSWORD",
+            "value": "$CODA_AUTH_SERVICE_ADMIN_PASSWORD"
+        },
         {
             "key": "CODA_AUTH_SERVICE_DB_HOST",
             "value": "$CODA_AUTH_SERVICE_DB_HOST"
