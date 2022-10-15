@@ -3,6 +3,7 @@
     "instanceCount": 1,
     "notExposeAsWebApp": false,
     "forceSsl": true,
+    "containerHttpPort": "$CODA_AUTH_SERVICE_PORT",
     "envVars": [
         {
             "key": "CODA_AUTH_SERVICE_DB_HOST",

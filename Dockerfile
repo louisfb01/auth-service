@@ -26,4 +26,4 @@ ENV KC_DB_URL=jdbc:postgresql://${CODA_AUTH_SERVICE_DB_HOST}/${CODA_AUTH_SERVICE
 ENV KC_DB_USERNAME=CODA_AUTH_SERVICE_DB_USERNAME
 ENV KC_DB_PASSWORD=CODA_AUTH_SERVICE_DB_PASSWORD
 
-ENTRYPOINT ["/opt/keycloak/bin/kc.sh", "start", "--hostname=${CAPROVER_APP}.${CAPROVER_NAME}.${CAPROVER_ROOT}", "--proxy=edge"]
+ENTRYPOINT ["/opt/keycloak/bin/kc.sh", "start", "--hostname=${CAPROVER_APP}.${CAPROVER_NAME}.${CAPROVER_ROOT}", "--proxy=edge", "--http-port ${CODA_AUTH_SERVICE_PORT}"]
