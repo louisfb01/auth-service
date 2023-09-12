@@ -2,7 +2,7 @@
     "appName": "auth-service",
     "instanceCount": 1,
     "notExposeAsWebApp": false,
-    "forceSsl": true,
+    "forceSsl": false,
     "containerHttpPort": "$CODA_AUTH_SERVICE_PORT",
     "envVars": [
         {
