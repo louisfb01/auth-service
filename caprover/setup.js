@@ -12,12 +12,13 @@ execSync(`caprover api -u ${process.env.CAPROVER_URL} ` +
     { stdio: 'inherit' }
 )
 
-execSync(`caprover api -u ${process.env.CAPROVER_URL} ` +
-    `-p ${process.env.CAPROVER_PASSWORD} ` +
-    `-n ${process.env.CAPROVER_NAME} ` +
-    `-t /user/apps/appDefinitions/enablebasedomainssl -m POST -d '${secure}'`,
-    { stdio: 'inherit' }
-)
+// Removed SSL verification for local deployment...
+// execSync(`caprover api -u ${process.env.CAPROVER_URL} ` +
+//     `-p ${process.env.CAPROVER_PASSWORD} ` +
+//     `-n ${process.env.CAPROVER_NAME} ` +
+//     `-t /user/apps/appDefinitions/enablebasedomainssl -m POST -d '${secure}'`,
+//     { stdio: 'inherit' }
+// )
 
 execSync(`caprover api -u ${process.env.CAPROVER_URL} ` +
     `-p ${process.env.CAPROVER_PASSWORD} ` +
